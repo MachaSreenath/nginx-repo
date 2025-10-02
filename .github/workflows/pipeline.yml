@@ -11,6 +11,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Replace ENV placeholder for DEV
+        run: sed -i 's/{{ENV_NAME}}/DEV/' index.html
+
       - name: Copy HTML to DEV
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -27,6 +30,9 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+
+      - name: Replace ENV placeholder for TEST
+        run: sed -i 's/{{ENV_NAME}}/TEST/' index.html
 
       - name: Copy HTML to TEST
         uses: appleboy/scp-action@v0.1.7
@@ -45,6 +51,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Replace ENV placeholder for PREPROD
+        run: sed -i 's/{{ENV_NAME}}/PREPROD/' index.html
+
       - name: Copy HTML to PREPROD
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -61,6 +70,9 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+
+      - name: Replace ENV placeholder for PROD
+        run: sed -i 's/{{ENV_NAME}}/PROD/' index.html
 
       - name: Copy HTML to PROD
         uses: appleboy/scp-action@v0.1.7
