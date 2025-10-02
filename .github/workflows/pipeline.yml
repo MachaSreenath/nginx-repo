@@ -1,0 +1,72 @@
+name: Deploy HTML to Nginx Servers
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Copy HTML to DEV
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEV_SERVER }}
+          username: ec2-user
+          key: ${{ secrets.SSH_KEY }}
+          source: "index.html"
+          target: "/usr/share/nginx/html/"
+
+  deploy-test:
+    runs-on: ubuntu-latest
+    needs: deploy-dev
+    environment: test
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Copy HTML to TEST
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.TEST_SERVER }}
+          username: ec2-user
+          key: ${{ secrets.SSH_KEY }}
+          source: "index.html"
+          target: "/usr/share/nginx/html/"
+
+  deploy-preprod:
+    runs-on: ubuntu-latest
+    needs: deploy-test
+    environment: preprod
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Copy HTML to PREPROD
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PREPROD_SERVER }}
+          username: ec2-user
+          key: ${{ secrets.SSH_KEY }}
+          source: "index.html"
+          target: "/usr/share/nginx/html/"
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: deploy-preprod
+    environment: production
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Copy HTML to PROD
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PROD_SERVER }}
+          username: ec2-user
+          key: ${{ secrets.SSH_KEY }}
+          source: "index.html"
+          target: "/usr/share/nginx/html/"
