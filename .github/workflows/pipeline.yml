@@ -11,9 +11,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Replace ENV placeholder for DEV
-        run: sed -i 's/{{ENV_NAME}}/DEV/' index.html
-
       - name: Deploy HTML to DEV Nginx
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -21,7 +18,17 @@ jobs:
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           script: |
-            sudo tee /usr/share/nginx/html/index.html < index.html
+            sudo tee /usr/share/nginx/html/index.html > /dev/null <<EOF
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>DEV Environment</title>
+            </head>
+            <body>
+              <h1>Welcome to DEV Nginx Server</h1>
+            </body>
+            </html>
+            EOF
             sudo chown nginx:nginx /usr/share/nginx/html/index.html
             sudo systemctl restart nginx
 
@@ -33,9 +40,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Replace ENV placeholder for TEST
-        run: sed -i 's/{{ENV_NAME}}/TEST/' index.html
-
       - name: Deploy HTML to TEST Nginx
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -43,7 +47,17 @@ jobs:
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           script: |
-            sudo tee /usr/share/nginx/html/index.html < index.html
+            sudo tee /usr/share/nginx/html/index.html > /dev/null <<EOF
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>TEST Environment</title>
+            </head>
+            <body>
+              <h1>Welcome to TEST Nginx Server</h1>
+            </body>
+            </html>
+            EOF
             sudo chown nginx:nginx /usr/share/nginx/html/index.html
             sudo systemctl restart nginx
 
@@ -55,9 +69,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Replace ENV placeholder for PREPROD
-        run: sed -i 's/{{ENV_NAME}}/PREPROD/' index.html
-
       - name: Deploy HTML to PREPROD Nginx
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -65,7 +76,17 @@ jobs:
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           script: |
-            sudo tee /usr/share/nginx/html/index.html < index.html
+            sudo tee /usr/share/nginx/html/index.html > /dev/null <<EOF
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>PREPROD Environment</title>
+            </head>
+            <body>
+              <h1>Welcome to PREPROD Nginx Server</h1>
+            </body>
+            </html>
+            EOF
             sudo chown nginx:nginx /usr/share/nginx/html/index.html
             sudo systemctl restart nginx
 
@@ -77,9 +98,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Replace ENV placeholder for PROD
-        run: sed -i 's/{{ENV_NAME}}/PROD/' index.html
-
       - name: Deploy HTML to PROD Nginx
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -87,6 +105,16 @@ jobs:
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           script: |
-            sudo tee /usr/share/nginx/html/index.html < index.html
+            sudo tee /usr/share/nginx/html/index.html > /dev/null <<EOF
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>PROD Environment</title>
+            </head>
+            <body>
+              <h1>Welcome to PROD Nginx Server</h1>
+            </body>
+            </html>
+            EOF
             sudo chown nginx:nginx /usr/share/nginx/html/index.html
             sudo systemctl restart nginx
