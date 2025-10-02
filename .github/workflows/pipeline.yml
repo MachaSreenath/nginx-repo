@@ -14,14 +14,16 @@ jobs:
       - name: Replace ENV placeholder for DEV
         run: sed -i 's/{{ENV_NAME}}/DEV/' index.html
 
-      - name: Copy HTML to DEV
-        uses: appleboy/scp-action@v0.1.7
+      - name: Deploy HTML to DEV Nginx
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.DEV_SERVER }}
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
-          source: "index.html"
-          target: "/usr/share/nginx/html/"
+          script: |
+            sudo tee /usr/share/nginx/html/index.html < index.html
+            sudo chown nginx:nginx /usr/share/nginx/html/index.html
+            sudo systemctl restart nginx
 
   deploy-test:
     runs-on: ubuntu-latest
@@ -34,14 +36,16 @@ jobs:
       - name: Replace ENV placeholder for TEST
         run: sed -i 's/{{ENV_NAME}}/TEST/' index.html
 
-      - name: Copy HTML to TEST
-        uses: appleboy/scp-action@v0.1.7
+      - name: Deploy HTML to TEST Nginx
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.TEST_SERVER }}
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
-          source: "index.html"
-          target: "/usr/share/nginx/html/"
+          script: |
+            sudo tee /usr/share/nginx/html/index.html < index.html
+            sudo chown nginx:nginx /usr/share/nginx/html/index.html
+            sudo systemctl restart nginx
 
   deploy-preprod:
     runs-on: ubuntu-latest
@@ -54,14 +58,16 @@ jobs:
       - name: Replace ENV placeholder for PREPROD
         run: sed -i 's/{{ENV_NAME}}/PREPROD/' index.html
 
-      - name: Copy HTML to PREPROD
-        uses: appleboy/scp-action@v0.1.7
+      - name: Deploy HTML to PREPROD Nginx
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.PREPROD_SERVER }}
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
-          source: "index.html"
-          target: "/usr/share/nginx/html/"
+          script: |
+            sudo tee /usr/share/nginx/html/index.html < index.html
+            sudo chown nginx:nginx /usr/share/nginx/html/index.html
+            sudo systemctl restart nginx
 
   deploy-prod:
     runs-on: ubuntu-latest
@@ -74,11 +80,13 @@ jobs:
       - name: Replace ENV placeholder for PROD
         run: sed -i 's/{{ENV_NAME}}/PROD/' index.html
 
-      - name: Copy HTML to PROD
-        uses: appleboy/scp-action@v0.1.7
+      - name: Deploy HTML to PROD Nginx
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.PROD_SERVER }}
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
-          source: "index.html"
-          target: "/usr/share/nginx/html/"
+          script: |
+            sudo tee /usr/share/nginx/html/index.html < index.html
+            sudo chown nginx:nginx /usr/share/nginx/html/index.html
+            sudo systemctl restart nginx
