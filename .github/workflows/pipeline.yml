@@ -1,120 +1,30 @@
-name: Deploy HTML to Nginx Servers
+name: Deploy HTML to Nginx on EC2
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  deploy-dev:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Deploy HTML to DEV Nginx
+      - name: Copy index.html to EC2 Nginx folder
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "index.html"
+          target: "/usr/share/nginx/html/"
+
+      - name: Restart Nginx service
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.DEV_SERVER }}
-          username: ec2-user
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            sudo tee /usr/share/nginx/html/index.html > /dev/null <<EOF
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <title>DEV Environment</title>
-            </head>
-            <body>
-              <h1>Welcome to DEV Nginx Server</h1>
-            </body>
-            </html>
-            EOF
-            sudo chown nginx:nginx /usr/share/nginx/html/index.html
-            sudo systemctl restart nginx
-
-  deploy-test:
-    runs-on: ubuntu-latest
-    needs: deploy-dev
-    environment: test
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Deploy HTML to TEST Nginx
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.TEST_SERVER }}
-          username: ec2-user
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            sudo tee /usr/share/nginx/html/index.html > /dev/null <<EOF
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <title>TEST Environment</title>
-            </head>
-            <body>
-              <h1>Welcome to TEST Nginx Server</h1>
-            </body>
-            </html>
-            EOF
-            sudo chown nginx:nginx /usr/share/nginx/html/index.html
-            sudo systemctl restart nginx
-
-  deploy-preprod:
-    runs-on: ubuntu-latest
-    needs: deploy-test
-    environment: preprod
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Deploy HTML to PREPROD Nginx
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.PREPROD_SERVER }}
-          username: ec2-user
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            sudo tee /usr/share/nginx/html/index.html > /dev/null <<EOF
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <title>PREPROD Environment</title>
-            </head>
-            <body>
-              <h1>Welcome to PREPROD Nginx Server</h1>
-            </body>
-            </html>
-            EOF
-            sudo chown nginx:nginx /usr/share/nginx/html/index.html
-            sudo systemctl restart nginx
-
-  deploy-prod:
-    runs-on: ubuntu-latest
-    needs: deploy-preprod
-    environment: production
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Deploy HTML to PROD Nginx
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.PROD_SERVER }}
-          username: ec2-user
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            sudo tee /usr/share/nginx/html/index.html > /dev/null <<EOF
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <title>PROD Environment</title>
-            </head>
-            <body>
-              <h1>Welcome to PROD Nginx Server</h1>
-            </body>
-            </html>
-            EOF
-            sudo chown nginx:nginx /usr/share/nginx/html/index.html
             sudo systemctl restart nginx
