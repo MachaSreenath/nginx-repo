@@ -1,30 +1,27 @@
-name: Deploy HTML to Nginx on EC2
+name: Deploy to PROD
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main 
 
 jobs:
-  deploy:
+  deploy-prod:
     runs-on: ubuntu-latest
+    environment: prod   
+
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Copy index.html to EC2 Nginx folder
+      - name: Replace ENV placeholder
+        run: sed -i 's/{{ENV_NAME}}/PROD/' index.html
+
+      - name: Deploy to PROD EC2
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.SSH_KEY }}
+          host: ${{ secrets.PROD_SERVER }}
+          username: ec2-user
+          key: ${{ secrets.PROD_SSH_KEY }}
           source: "index.html"
           target: "/usr/share/nginx/html/"
-
-      - name: Restart Nginx service
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            sudo systemctl restart nginx
