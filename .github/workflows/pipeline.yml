@@ -1,4 +1,4 @@
-name: Deploy to PROD
+name: Deploy HTML to Servers
 
 on:
   push:
@@ -6,22 +6,51 @@ on:
       - main 
 
 jobs:
-  deploy-prod:
-    runs-on: ubuntu-latest
-    environment: prod   
 
+  deploy-test:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Replace ENV placeholder
-        run: sed -i 's/{{ENV_NAME}}/PROD/' index.html
-
-      - name: Deploy to PROD EC2
+      - name: Deploy HTML to TEST Nginx
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.PROD_SERVER }}
-          username: ec2-user
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_KEY }}
           source: "index.html"
           target: "/usr/share/nginx/html/"
+
+      - name: Restart Nginx on TEST
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: sudo systemctl restart nginx
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: deploy-test
+    environment: prod
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Deploy HTML to PROD Nginx
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PROD_SERVER }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "index.html"
+          target: "/usr/share/nginx/html/"
+
+      - name: Restart Nginx on PROD
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.PROD_SERVER }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: sudo systemctl restart nginx
